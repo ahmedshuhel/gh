@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Text;
 using Refit;
@@ -38,6 +40,7 @@ namespace Cli
     public int PublicGists { get; set; }
   }
 
+  [Headers("User-Agent: Awesome Octocat App")]
   public interface IGitHubApi
   {
     [Get("/user")]
@@ -52,6 +55,8 @@ namespace Cli
     {
 
       var token = "958cae560dc43851fe43b41d7eea9dcdcc7999e9";
+
+
       var settings = new RefitSettings() {
         AuthorizationHeaderValueGetter = () => Task.FromResult(token)
       };
@@ -65,6 +70,18 @@ namespace Cli
       {
         Console.WriteLine(ex.Message);
       }
+      /*
+       var client = new HttpClient();
+       client.DefaultRequestHeaders.Add("User-Agent", "Gtihub CLI Client .NET");
+       var message = new HttpRequestMessage(HttpMethod.Get, "https://api.github.com/user");
+       message.Headers.Authorization = new AuthenticationHeaderValue("token", token);
+
+       HttpResponseMessage response = await client.SendAsync(message);
+       response.EnsureSuccessStatusCode();
+       string responseBody = await response.Content.ReadAsStringAsync();
+
+       Console.WriteLine(responseBody);
+      */
     }
   }
 }
