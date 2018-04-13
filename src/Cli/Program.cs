@@ -40,12 +40,11 @@ namespace Cli
     public int PublicGists { get; set; }
   }
 
-  [Headers("User-Agent: Awesome Octocat App")]
+  [Headers("User-Agent: Github CLI (gh)")]
   public interface IGitHubApi
   {
     [Get("/user")]
-    [Headers("Authorization: token")]
-    Task<User> GetUser();
+    Task<User> GetUser([Header("Authorization")] string authorization);
   }
 
 
@@ -53,35 +52,19 @@ namespace Cli
   {
     static async Task Main(string[] args)
     {
-
-      var token = "958cae560dc43851fe43b41d7eea9dcdcc7999e9";
-
-
-      var settings = new RefitSettings() {
-        AuthorizationHeaderValueGetter = () => Task.FromResult(token)
-      };
-      var api = RestService.For<IGitHubApi>("https://api.github.com", settings);
+      var pat = Environment.GetEnvironmentVariable("PAT");
+      var auth = $"token {pat}";
+        Console.WriteLine(auth);
+      var api = RestService.For<IGitHubApi>("https://api.github.com");
       try
       {
-        var user =  await api.GetUser();
+        var user =  await api.GetUser(auth);
         Console.WriteLine(user.Login);
       }
       catch (ApiException ex)
       {
         Console.WriteLine(ex.Message);
       }
-      /*
-       var client = new HttpClient();
-       client.DefaultRequestHeaders.Add("User-Agent", "Gtihub CLI Client .NET");
-       var message = new HttpRequestMessage(HttpMethod.Get, "https://api.github.com/user");
-       message.Headers.Authorization = new AuthenticationHeaderValue("token", token);
-
-       HttpResponseMessage response = await client.SendAsync(message);
-       response.EnsureSuccessStatusCode();
-       string responseBody = await response.Content.ReadAsStringAsync();
-
-       Console.WriteLine(responseBody);
-      */
     }
   }
 }
