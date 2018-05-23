@@ -3,10 +3,17 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Text;
+using System.IO;
+using Newtonsoft.Json;
 using Refit;
 
 namespace Cli
 {
+  public class GhConfig
+  {
+    public string PAT { get; set; }
+  }
+
   public class User
   {
     public string Login { get; set; }
@@ -52,9 +59,17 @@ namespace Cli
   {
     static async Task Main(string[] args)
     {
-      var pat = Environment.GetEnvironmentVariable("PAT");
-      var auth = $"token {pat}";
-        Console.WriteLine(auth);
+      var configPath = $"{Environment.GetFolderPath(Environment.SpecialFolder.UserProfile)}/.config/gh.json";
+
+      if (!File.Exists(configPath)) {
+        Console.WriteLine("No config file found at {0}", configPath);
+        return;
+      }
+
+      var configFile = File.ReadAllText(configPath);
+      GhConfig config = JsonConvert.DeserializeObject<GhConfig>(configFile);
+      var auth = $"token {config.PAT}";
+
       var api = RestService.For<IGitHubApi>("https://api.github.com");
       try
       {
